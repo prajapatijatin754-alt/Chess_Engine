@@ -16,8 +16,10 @@ public:
         return p.row >= 0 && p.row < 8 && p.col >=0 && p.col < 8;
     }
     Piece* GetPieceAt(Position p)const;
+    bool is_black_checked;
+    bool is_white_checked;
     Position GetKingPosition(PieceColor color) const;
-    bool isKingInCheck(PieceColor color) const;
+    bool isKingInCheck(PieceColor color) ;
     Piece* ExecuteMove(const Move&move);
     void UndoMove(const Move&move,Piece* removedPiece);
 };

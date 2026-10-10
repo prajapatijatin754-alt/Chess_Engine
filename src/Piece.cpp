@@ -169,7 +169,7 @@ vector<Move> King::GetPossibleMoves(const Board& board,Position currentPos)const
         }    
     }
         //castleinglogic
-    if(this->color == PieceColor::White && currentPos.row == 7 && currentPos.col == 4 && !hasMoved){
+    if(this->color == PieceColor::White && currentPos.row == 7 && currentPos.col == 4 && !hasMoved && !board.is_white_checked){
         //white kingside casteling
         //if this move is played rook should be played to its designated position
 
@@ -177,19 +177,19 @@ vector<Move> King::GetPossibleMoves(const Board& board,Position currentPos)const
             moves.push_back(Move(currentPos,{7,6},type,PieceType::NONE,true));
         }
     } 
-    if(this->color == PieceColor::White && currentPos.row == 7 && currentPos.col == 4 && !hasMoved){
+    if(this->color == PieceColor::White && currentPos.row == 7 && currentPos.col == 4 && !hasMoved && !board.is_white_checked){
         //white queenside casteling
         if(board.GetPieceAt(Position{7,1})==nullptr && board.GetPieceAt(Position{7,2})==nullptr && board.GetPieceAt(Position{7,3})==nullptr && board.GetPieceAt(Position{7,0})!=nullptr && board.GetPieceAt(Position{7,0})->GetType()==PieceType::ROOK && !board.GetPieceAt(Position{7,0})->HasMoved()){
             moves.push_back(Move(currentPos,{7,2},type,PieceType::NONE,true));
         }
     }
-    if(this->color == PieceColor::Black && currentPos.row == 0 && currentPos.col == 4 && !hasMoved){
+    if(this->color == PieceColor::Black && currentPos.row == 0 && currentPos.col == 4 && !hasMoved && !board.is_black_checked){
         //black kingside casteling
         if(board.GetPieceAt(Position{0,5})==nullptr && board.GetPieceAt(Position{0,6})==nullptr && board.GetPieceAt(Position{0,7})!=nullptr && board.GetPieceAt(Position{0,7})->GetType()==PieceType::ROOK && !board.GetPieceAt(Position{0,7})->HasMoved()){
             moves.push_back(Move(currentPos,{0,6},type,PieceType::NONE,true));
         }
     }
-    if(this->color == PieceColor::Black && currentPos.row == 0 && currentPos.col == 4 && !hasMoved){
+    if(this->color == PieceColor::Black && currentPos.row == 0 && currentPos.col == 4 && !hasMoved && !board.is_black_checked){
         //black queenside casteling
         if(board.GetPieceAt(Position{0,1})==nullptr && board.GetPieceAt(Position{0,2})==nullptr && board.GetPieceAt(Position{0,3})==nullptr && board.GetPieceAt(Position{0,0})!=nullptr && board.GetPieceAt(Position{0,0})->GetType()==PieceType::ROOK && !board.GetPieceAt(Position{0,0})->HasMoved()){
             moves.push_back(Move(currentPos,{0,2},type,PieceType::NONE,true));

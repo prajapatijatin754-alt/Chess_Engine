@@ -82,7 +82,7 @@ void Board::UndoMove(const Move& move,Piece* removedPiece){
     }
 }       
 
-bool Board::isKingInCheck(PieceColor color)const{
+bool Board::isKingInCheck(PieceColor color){
     Position kingpos = GetKingPosition(color);
     if(kingpos.row==-1){
         return true;
@@ -93,6 +93,12 @@ bool Board::isKingInCheck(PieceColor color)const{
                 std::vector<Move> temp_move = grid[r][c]->GetPossibleMoves(*this,{r,c});
                 for(Move m:temp_move){
                     if(m.to.row==kingpos.row && m.to.col==kingpos.col){
+                        if(color==PieceColor::White){
+                            this->is_white_checked = true;
+                        }
+                        else{
+                            this->is_black_checked = true;
+                        }
                         return true;
                     }
                 }

@@ -4,7 +4,7 @@
 #include "Board.h"
 #include <vector>
 
-class ChessGame:public Board{
+class ChessGame{
     private:
         Board board;
         PieceColor currentTurn;
@@ -22,7 +22,6 @@ class ChessGame:public Board{
         bool isGameOver();
         bool isKingInCheck(PieceColor);
         Position GetKingPosition(PieceColor color) const;
-
 };
 
 #endif
