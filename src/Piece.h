@@ -18,10 +18,11 @@ class Piece{
     hasMoved(false) {}
     virtual ~Piece()= default;
 
-    PieceColor GetColor()const{return color;}
-    PieceType GetType()const{return type;}
-    bool HasMoved()const{return hasMoved;}
-    void SetMoved(bool moved){hasMoved=moved;} 
+    PieceColor GetColor()const{return color;} //get color of the piece
+    PieceType GetType()const{return type;}//get type of the piece
+    bool HasMoved()const{return hasMoved;}//gettter
+    //for the moves which are requried a piece to be not moves (castleing , 2 moves of pawn , etc)
+    void SetMoved(bool moved){hasMoved=moved;} //setter
 
     //get all possible moves is a purely virtual function
     virtual std::vector<Move> GetPossibleMoves(const Board& board,Position currentPosition)const=0;
