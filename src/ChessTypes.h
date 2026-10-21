@@ -24,7 +24,7 @@ struct Position {
     int col;
 
 // spaceship operater
-    bool operater<=>(const operater&) const = default;
+    bool operator<=>(const Position&) const = default;
 };
 
 struct Move {
