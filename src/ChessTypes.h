@@ -23,7 +23,7 @@ struct Position {
     int row;
     int col;
 
-// space operater
+// spaceship operater
     bool operater<=>(const operater&) const = default;
 };
 
