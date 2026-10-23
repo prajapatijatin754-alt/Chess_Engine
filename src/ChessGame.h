@@ -5,7 +5,7 @@
 #include <vector>
 
 class ChessGame{
-    private:
+    protected:
         Board board;
         PieceColor currentTurn;
         void SwitchTurn(){

@@ -10,7 +10,7 @@
 
 // Include our new engine
 #include "ChessGame.h" 
-
+#include "DrunkenEngine.cpp"
 using namespace Gdiplus;
 
 const int BOARD_SIZE = 8;
@@ -27,8 +27,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     static Image *whiteBishop = nullptr, *blackBishop = nullptr;
 
     // 2. OUR NEW OOP CHESS ENGINE
-    static ChessGame game; 
-
+    // static ChessGame game; 
+    static DrunkenEngine game;
     // 3. MOUSE TRACKING VARIABLES
     static bool hasSelection = false;
     static Position selectedPos = {-1, -1};
@@ -37,18 +37,18 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_CREATE:
         // Load images just once
-        whitePawn = new Image(L"white-pawn.png");
-        blackPawn = new Image(L"black-pawn.png");
-        whiteKnight = new Image(L"white-knight.png");
-        blackKnight = new Image(L"black-knight.png");
-        whiteRook = new Image(L"white-rook.png");
-        blackRook = new Image(L"black-rook.png");
-        whiteQueen = new Image(L"white-queen.png");
-        blackQueen = new Image(L"black-queen.png");
-        whiteKing = new Image(L"white-king.png");
-        blackKing = new Image(L"black-king.png");
-        whiteBishop = new Image(L"white-bishop.png");
-        blackBishop = new Image(L"black-bishop.png");
+        whitePawn = new Image(L"../assests/white-pawn.png");
+        blackPawn = new Image(L"../assests/black-pawn.png");
+        whiteKnight = new Image(L"../assests/white-knight.png");
+        blackKnight = new Image(L"../assests/black-knight.png");
+        whiteRook = new Image(L"../assests/white-rook.png");
+        blackRook = new Image(L"../assests/black-rook.png");
+        whiteQueen = new Image(L"../assests/white-queen.png");
+        blackQueen = new Image(L"../assests/black-queen.png");
+        whiteKing = new Image(L"../assests/white-king.png");
+        blackKing = new Image(L"../assests/black-king.png");
+        whiteBishop = new Image(L"../assests/white-bishop.png");
+        blackBishop = new Image(L"../assests/black-bishop.png");
         return 0;
 
     case WM_DESTROY:
@@ -82,6 +82,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 // They clicked a dot! Move the piece.
                 game.AttemptMove(selectedPos, clickedPos);
                 hasSelection = false;
+                game.MakeAIMove();
                 currentValidMoves.clear();
             } else {
                 // They clicked somewhere else. Let's see if they clicked a different friendly piece.
