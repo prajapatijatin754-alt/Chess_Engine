@@ -14,6 +14,8 @@ Piece* Board::GetPieceAt(Position p) const {
     // .get() returns the raw pointer managed by the unique_ptr
     return grid[p.row][p.col].get(); 
 }
+//iterate oer complete board and find the position of the KING
+// one upgrade can be made => store the position of king whenever the king is moved and use this functtion as a gettter
 Position Board::GetKingPosition(PieceColor color) const{
     for(int i=0;i<8;i++){
         for(int j=0;j<8;j++){
