@@ -22,9 +22,14 @@ enum class PieceType {
 struct Position {
     int row;
     int col;
-
-// spaceship operater
-    bool operator<=>(const Position&) const = default;
+    //bool operator<=>(const Position&) const = default;
+    //in cpp 20+ we can use spaceship operator but for max compatibility i'll use == and !=
+    bool operator==(const Position& other) const {
+        return row == other.row && col == other.col;
+    }
+    bool operator!=(const Position& other) const {
+        return !(*this == other);
+    }
 };
 
 struct Move {
