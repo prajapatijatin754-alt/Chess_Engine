@@ -11,7 +11,7 @@
 
 // Include our new engine
 #include "ChessGame.h" 
-#include "DrunkenEngine.cpp"
+#include "Engine.cpp"
 using namespace Gdiplus;
 using Gdiplus::Color;
 using Gdiplus::Graphics;
@@ -36,7 +36,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     // 2. OUR NEW OOP CHESS ENGINE
     // static ChessGame game; 
-    static DrunkenEngine game;
+    static Engine game;
     // 3. MOUSE TRACKING VARIABLES
     static bool hasSelection = false;
     static Position selectedPos = {-1, -1};

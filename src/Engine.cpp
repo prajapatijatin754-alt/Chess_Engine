@@ -222,10 +222,10 @@ string MoveToUci(const Move& move) {
 
 } // namespace
 
-class DrunkenEngine : public ChessGame {
+class Engine : public ChessGame {
 public:
-    DrunkenEngine() = default;
-    ~DrunkenEngine() = default;
+    Engine() = default;
+    ~Engine() = default;
 
     Move GenerateBestMove() {
         vector<Move> legalMoves = GetAllLegalMoves();
