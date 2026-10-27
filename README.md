@@ -7,6 +7,7 @@ A C++ based Chess Engine with a graphical user interface (GUI) built using the W
 - Windows Operating System
 - A C++ compiler (like `g++` via MinGW)
 - GDI+ library (usually included with the Windows SDK)
+- Any reasoning llm api key (In this project Openai/gpt-oss-120b was used)
 
 ## How to Compile
 
