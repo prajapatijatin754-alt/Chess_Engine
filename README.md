@@ -14,7 +14,7 @@ To compile the project, you need to link against the GDI+ and GDI32 libraries. Y
 
 ```bash
 cd .\src\    
-g++ *.cpp -o chessboard.exe -lgdi32 -lgdiplus -mwindows                      
+g++ *.cpp -o chessboard.exe -lgdi32 -lgdiplus -mwindows -lwinhttp                 
 .\chessboard.exe  
 ```
 
