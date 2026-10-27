@@ -4,6 +4,7 @@
 #include "ChessTypes.h"
 #include "Piece.h"
 #include <memory>
+#include <string>
 using std::unique_ptr;
 class Board{
     private:
@@ -16,6 +17,8 @@ public:
         return p.row >= 0 && p.row < 8 && p.col >=0 && p.col < 8;
     }
     Piece* GetPieceAt(Position p)const;
+    std::string ToFEN(PieceColor sideToMove) const;
+    bool PromotePiece(Position position, PieceType promotionType);
     bool is_black_checked;
     bool is_white_checked;
     Position GetKingPosition(PieceColor color) const;

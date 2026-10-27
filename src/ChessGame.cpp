@@ -14,6 +14,16 @@ vector<Move> ChessGame::GetLegalMoves(Position p){
     possibleMoves = piece->GetPossibleMoves(board,p);
     return piece->GetLegalMoves(board,p,possibleMoves);
 }
+vector<Move> ChessGame::GetAllLegalMoves(){
+    vector<Move> legalMoves;
+    for (int row = 0; row < 8; ++row) {
+        for (int col = 0; col < 8; ++col) {
+            vector<Move> pieceMoves = GetLegalMoves({row, col});
+            legalMoves.insert(legalMoves.end(), pieceMoves.begin(), pieceMoves.end());
+        }
+    }
+    return legalMoves;
+}
 bool ChessGame::isKingInCheck(PieceColor color){
     Position kingPos = board.GetKingPosition(color);
     for(int r=0;r<8;r++){
@@ -31,10 +41,13 @@ bool ChessGame::isKingInCheck(PieceColor color){
     }
     return false;
 }
-bool ChessGame::AttemptMove(Position from, Position to){
+bool ChessGame::AttemptMove(Position from, Position to, PieceType promotion){
     vector<Move> allowedMoves = GetLegalMoves(from);
     for(const Move& move : allowedMoves){
         if(move.to == to){
+            if (move.promotionChoice != PieceType::NONE && promotion == PieceType::NONE) {
+                return false;
+            }
             Piece* captured = board.ExecuteMove(move);
             if (captured != nullptr) {
                 delete captured;
@@ -42,6 +55,11 @@ bool ChessGame::AttemptMove(Position from, Position to){
             Piece* movedPiece = board.GetPieceAt(to);
             if (movedPiece != nullptr) {
                 movedPiece->SetMoved(true);
+            }
+            if (move.promotionChoice != PieceType::NONE) {
+                if (!board.PromotePiece(move.to, promotion)) {
+                    return false;
+                }
             }
             if(move.isCastling){
                 if(move.to.col == 6){

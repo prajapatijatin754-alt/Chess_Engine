@@ -6,12 +6,19 @@
 #include <windowsx.h> 
 #include <gdiplus.h>
 #pragma comment(lib, "Gdiplus.lib")
-#include <string>
+#include <string.h>
 
 // Include our new engine
 #include "ChessGame.h" 
 #include "DrunkenEngine.cpp"
 using namespace Gdiplus;
+using Gdiplus::Color;
+using Gdiplus::Graphics;
+using Gdiplus::Image;
+using Gdiplus::Ok;
+using Gdiplus::SolidBrush;
+using Gdiplus::GdiplusStartup;
+using Gdiplus::GdiplusStartupInput;
 
 const int BOARD_SIZE = 8;
 const int SQUARE_SIZE = 80;
@@ -33,6 +40,38 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     static bool hasSelection = false;
     static Position selectedPos = {-1, -1};
     static std::vector<Move> currentValidMoves;
+    static bool choosingPromotion = false;
+    static Position promotionFrom = {-1, -1};
+    static Position promotionTo = {-1, -1};
+    static PieceColor promotionColor = PieceColor::None;
+
+    auto imageForPiece = [&](PieceColor color, PieceType type) -> Image* {
+        if (color == PieceColor::White) {
+            if(type == PieceType::BISHOP) return whiteBishop;
+            if(type == PieceType::KNIGHT) return whiteKnight;
+            if(type == PieceType::ROOK) return whiteRook;
+            if(type == PieceType::QUEEN) return whiteQueen;
+        } else if (color == PieceColor::Black) {
+            if (type == PieceType::KNIGHT) return blackKnight;
+            if (type == PieceType::BISHOP) return blackBishop;
+            if (type == PieceType::ROOK) return blackRook;
+            if (type == PieceType::QUEEN) return blackQueen;
+        }
+        return nullptr;
+    };
+
+    auto finishPromotion = [&](PieceType promotionType) {
+        if (game.AttemptMove(promotionFrom, promotionTo, promotionType)) {
+            choosingPromotion = false;
+            promotionFrom = {-1, -1};
+            promotionTo = {-1, -1};
+            promotionColor = PieceColor::None;
+            hasSelection = false;
+            currentValidMoves.clear();
+            game.MakeAIMove();
+            InvalidateRect(hwnd, NULL, FALSE);
+        }
+    };
     switch (uMsg)
     {
     case WM_CREATE:
@@ -66,6 +105,24 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         int mouseX = GET_X_LPARAM(lParam);
         int mouseY = GET_Y_LPARAM(lParam);
+
+        if (choosingPromotion) {
+            const PieceType promotionTypes[] = {
+                PieceType::QUEEN, PieceType::ROOK,
+                PieceType::BISHOP, PieceType::KNIGHT
+            };
+            const int optionSize = 80;
+            const int optionLeft = (BOARD_SIZE * SQUARE_SIZE - optionSize * 4) / 2;
+            const int optionTop = (BOARD_SIZE * SQUARE_SIZE - optionSize) / 2;
+
+            if (mouseY >= optionTop && mouseY < optionTop + optionSize &&
+                mouseX >= optionLeft && mouseX < optionLeft + optionSize * 4) {
+                int option = (mouseX - optionLeft) / optionSize;
+                finishPromotion(promotionTypes[option]);
+            }
+            return 0;
+        }
+
         Position clickedPos = { mouseY / SQUARE_SIZE, mouseX / SQUARE_SIZE };
 
         if (hasSelection) {
@@ -79,11 +136,26 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
 
             if (clickedValidMove) {
-                // They clicked a dot! Move the piece.
-                game.AttemptMove(selectedPos, clickedPos);
-                hasSelection = false;
-                game.MakeAIMove();
-                currentValidMoves.clear();
+                Move selectedMove;
+                for (const Move& move : currentValidMoves) {
+                    if (move.to == clickedPos) {
+                        selectedMove = move;
+                        break;
+                    }
+                }
+
+                if (selectedMove.promotionChoice != PieceType::NONE) {
+                    choosingPromotion = true;
+                    promotionFrom = selectedMove.from;
+                    promotionTo = selectedMove.to;
+                    Piece* pawn = game.GetBoard().GetPieceAt(selectedMove.from);
+                    promotionColor = pawn->GetColor();
+                } else {
+                    game.AttemptMove(selectedPos, clickedPos);
+                    hasSelection = false;
+                    game.MakeAIMove();
+                    currentValidMoves.clear();
+                }
             } else {
                 // They clicked somewhere else. Let's see if they clicked a different friendly piece.
                 currentValidMoves = game.GetLegalMoves(clickedPos);
@@ -143,7 +215,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         HBRUSH hBrushDark = CreateSolidBrush(RGB(118, 150, 86));
         
         Graphics graphics(hdc);
-
         // Get a reference to the board so we can read it
         const Board& currentBoard = game.GetBoard();
 
@@ -172,25 +243,56 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     // Match the OOP piece to your GDI+ image pointers
                     if (color == PieceColor::White) {
                         if (type == PieceType::PAWN) imgToDraw = whitePawn;
-                        else if (type == PieceType::KNIGHT) imgToDraw = whiteKnight;
-                        else if (type == PieceType::BISHOP) imgToDraw = whiteBishop;
-                        else if (type == PieceType::ROOK) imgToDraw = whiteRook;
-                        else if (type == PieceType::QUEEN) imgToDraw = whiteQueen;
                         else if (type == PieceType::KING) imgToDraw = whiteKing;
-                    } 
-                    else if (color == PieceColor::Black) {
+                    } else if (color == PieceColor::Black) {
                         if (type == PieceType::PAWN) imgToDraw = blackPawn;
-                        else if (type == PieceType::KNIGHT) imgToDraw = blackKnight;
-                        else if (type == PieceType::BISHOP) imgToDraw = blackBishop;
-                        else if (type == PieceType::ROOK) imgToDraw = blackRook;
-                        else if (type == PieceType::QUEEN) imgToDraw = blackQueen;
                         else if (type == PieceType::KING) imgToDraw = blackKing;
+                    }
+                    if (imgToDraw == nullptr) {
+                        imgToDraw = imageForPiece(color, type);
                     }
 
                     // Draw the image
                     if (imgToDraw && imgToDraw->GetLastStatus() == Ok) {
                         graphics.DrawImage(imgToDraw, col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
                     }
+                }
+            }
+        }
+        if (choosingPromotion) {
+            const PieceType promotionTypes[] = {
+                PieceType::QUEEN, PieceType::ROOK,
+                PieceType::BISHOP, PieceType::KNIGHT
+            };
+            const int optionSize = 80;
+            const int optionLeft = (BOARD_SIZE * SQUARE_SIZE - optionSize * 4) / 2;
+            const int optionTop = (BOARD_SIZE * SQUARE_SIZE - optionSize) / 2;
+
+            HBRUSH overlayBrush = CreateSolidBrush(RGB(245, 245, 245));
+            RECT overlay = {optionLeft - 12, optionTop - 48,
+                            optionLeft + optionSize * 4 + 12, optionTop + optionSize + 48};
+            FillRect(hdc, &overlay, overlayBrush);
+            DeleteObject(overlayBrush);
+
+            SetBkMode(hdc, TRANSPARENT);
+            SetTextColor(hdc, RGB(30, 30, 30));
+            RECT titleRect = {optionLeft - 12, optionTop - 38,
+                              optionLeft + optionSize * 4 + 12, optionTop - 12};
+            DrawTextW(hdc, L"Choose promotion", -1, &titleRect,
+                      DT_CENTER | DT_SINGLELINE);
+
+            for (int i = 0; i < 4; ++i) {
+                RECT optionRect = {optionLeft + i * optionSize, optionTop,
+                                   optionLeft + (i + 1) * optionSize, optionTop + optionSize};
+                HBRUSH optionBrush = CreateSolidBrush(
+                    (i % 2 == 0) ? RGB(238, 238, 210) : RGB(118, 150, 86));
+                FillRect(hdc, &optionRect, optionBrush);
+                DeleteObject(optionBrush);
+
+                Image* optionImage = imageForPiece(promotionColor, promotionTypes[i]);
+                if (optionImage != nullptr && optionImage->GetLastStatus() == Ok) {
+                    graphics.DrawImage(optionImage, optionRect.left, optionRect.top,
+                                       optionSize, optionSize);
                 }
             }
         }
@@ -299,7 +401,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 
     if (hwnd == NULL)
     {
-        GdiplusShutdown(gdiplusToken);
+        Gdiplus::GdiplusShutdown(gdiplusToken);
         return 0;
     }
 
@@ -311,6 +413,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-    GdiplusShutdown(gdiplusToken);
+    Gdiplus::GdiplusShutdown(gdiplusToken);
     return 0;
 }

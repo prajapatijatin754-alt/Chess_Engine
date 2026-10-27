@@ -28,7 +28,16 @@ vector<Move>Pawn::GetPossibleMoves(const Board& board,Position currentPosition)c
             }
         }
     }
-    //En passant and Promotion Logic Left
+    // A pawn promotes on the back rank. The move is marked so callers can
+    // choose the replacement piece after the move is applied.
+    int promotionRow = (color == PieceColor::White) ? 0 : 7;
+    for (Move& move : moves) {
+        if (move.to.row == promotionRow) {
+            move.promotionChoice = PieceType::QUEEN;
+        }
+    }
+
+    //En passant remains to be implemented.
     return moves;
 }
 
