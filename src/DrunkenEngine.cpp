@@ -70,6 +70,40 @@ string Trim(string value) {
     return value.substr(first, last - first + 1);
 }
 
+string Lowercase(string value) {
+    for (char& character : value) {
+        if (character >= 'A' && character <= 'Z') {
+            character = static_cast<char>(character - 'A' + 'a');
+        }
+    }
+    return value;
+}
+
+bool IsUciBoundary(char character) {
+    return !(character >= 'a' && character <= 'z') &&
+           !(character >= 'A' && character <= 'Z') &&
+           !(character >= '0' && character <= '9');
+}
+
+bool ContainsUciMove(const string& text, const string& uci) {
+    string lowerText = Lowercase(text);
+    string lowerUci = Lowercase(uci);
+    size_t position = lowerText.find(lowerUci);
+
+    while (position != string::npos) {
+        bool startsAtBoundary =
+            position == 0 || IsUciBoundary(lowerText[position - 1]);
+        size_t end = position + lowerUci.length();
+        bool endsAtBoundary =
+            end == lowerText.length() || IsUciBoundary(lowerText[end]);
+        if (startsAtBoundary && endsAtBoundary) {
+            return true;
+        }
+        position = lowerText.find(lowerUci, position + 1);
+    }
+    return false;
+}
+
 wstring ToWide(const string& value) {
     if (value.empty()) {
         return {};
@@ -155,7 +189,7 @@ string HttpPost(const string& apiKey, const string& body) {
 
     if (statusCode < 200 || statusCode >= 300) {
         throw runtime_error("Groq returned HTTP status " +
-                                 to_string(statusCode));
+                            to_string(statusCode) + ": " + response);
     }
     return response;
 }
@@ -222,18 +256,31 @@ public:
         }
 
         string body = "{\"model\":\"" + MakeJson(model) +
-            "\",\"temperature\":0,\"max_tokens\":8,\"messages\":[{\"role\":\"user\",\"content\":\"" +
+            "\",\"temperature\":0,\"reasoning_effort\":\"low\",\"max_completion_tokens\":4000,\"include_reasoning\":false,\"messages\":[{\"role\":\"user\",\"content\":\"" +
             MakeJson(prompt) + "\"}]}";
         string response = HttpPost(apiKey, body);
-        string selectedUci = Trim(ExtractContent(response));
+        string selectedUci = Lowercase(Trim(ExtractContent(response)));
 
         for (const Move& move : legalMoves) {
             if (MoveToUci(move) == selectedUci) {
                 return move;
             }
         }
+
+        for (const Move& move : legalMoves) {
+            if (ContainsUciMove(selectedUci, MoveToUci(move))) {
+                return move;
+            }
+        }
+
+        for (const Move& move : legalMoves) {
+            if (ContainsUciMove(response, MoveToUci(move))) {
+                return move;
+            }
+        }
+
         throw runtime_error("Groq returned an illegal move: " +
-                                 selectedUci);
+                            selectedUci + "\nRaw response: " + response);
     }
 
     void MakeAIMove() {

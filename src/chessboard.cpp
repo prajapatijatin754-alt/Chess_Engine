@@ -7,6 +7,7 @@
 #include <gdiplus.h>
 #pragma comment(lib, "Gdiplus.lib")
 #include <string.h>
+#include <exception>
 
 // Include our new engine
 #include "ChessGame.h" 
@@ -61,15 +62,19 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     };
 
     auto finishPromotion = [&](PieceType promotionType) {
-        if (game.AttemptMove(promotionFrom, promotionTo, promotionType)) {
-            choosingPromotion = false;
-            promotionFrom = {-1, -1};
-            promotionTo = {-1, -1};
-            promotionColor = PieceColor::None;
-            hasSelection = false;
-            currentValidMoves.clear();
-            game.MakeAIMove();
-            InvalidateRect(hwnd, NULL, FALSE);
+        try {
+            if (game.AttemptMove(promotionFrom, promotionTo, promotionType)) {
+                choosingPromotion = false;
+                promotionFrom = {-1, -1};
+                promotionTo = {-1, -1};
+                promotionColor = PieceColor::None;
+                hasSelection = false;
+                currentValidMoves.clear();
+                game.MakeAIMove();
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+        } catch (const std::exception& error) {
+            MessageBoxA(hwnd, error.what(), "AI move failed", MB_OK | MB_ICONERROR);
         }
     };
     switch (uMsg)
@@ -151,10 +156,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     Piece* pawn = game.GetBoard().GetPieceAt(selectedMove.from);
                     promotionColor = pawn->GetColor();
                 } else {
-                    game.AttemptMove(selectedPos, clickedPos);
-                    hasSelection = false;
-                    game.MakeAIMove();
-                    currentValidMoves.clear();
+                    try {
+                        if (game.AttemptMove(selectedPos, clickedPos)) {
+                            hasSelection = false;
+                            currentValidMoves.clear();
+                            game.MakeAIMove();
+                        }
+                    } catch (const std::exception& error) {
+                        MessageBoxA(hwnd, error.what(), "AI move failed",
+                                    MB_OK | MB_ICONERROR);
+                    }
                 }
             } else {
                 // They clicked somewhere else. Let's see if they clicked a different friendly piece.
